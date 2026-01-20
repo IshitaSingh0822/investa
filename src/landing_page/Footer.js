@@ -8,9 +8,14 @@ function Footer() {
         <div className="row mt-5">
 
           <div className="col">
-            <img src="media/images/logo.png" style={{ width: "50%" }} alt="Investa logo" />
+            <img
+              src="media/images/logo.png"
+              style={{ width: "50%" }}
+              alt="Investa logo"
+            />
             <p>
-              &copy; 2010 - 2025, Investa Broking Ltd.<br />
+              &copy; 2010 - 2025, Investa Broking Ltd.
+              <br />
               All rights reserved.
             </p>
           </div>
@@ -20,7 +25,6 @@ function Footer() {
             <Link to="/about" className="d-block text-muted mb-2 text-decoration-none">About</Link>
             <Link to="/product" className="d-block text-muted mb-2 text-decoration-none">Products</Link>
             <Link to="/pricing" className="d-block text-muted mb-2 text-decoration-none">Pricing</Link>
-            <Link to="/referral" className="d-block text-muted mb-2 text-decoration-none">Referral programme</Link>
             <Link to="/careers" className="d-block text-muted mb-2 text-decoration-none">Careers</Link>
             <Link to="/press" className="d-block text-muted mb-2 text-decoration-none">Press & media</Link>
           </div>
@@ -40,14 +44,16 @@ function Footer() {
           </div>
         </div>
 
-        <div className="mt-4 pt-3 pb-4 d-flex flex-wrap justify-content-center gap-3 text-muted" style={{ fontSize: "13px" }}>
+        <div
+          className="mt-4 pt-3 pb-4 d-flex flex-wrap justify-content-center gap-3 text-muted"
+          style={{ fontSize: "13px" }}
+        >
           <button className="btn btn-link text-muted p-0">NSE</button>
           <button className="btn btn-link text-muted p-0">BSE</button>
           <button className="btn btn-link text-muted p-0">MCX</button>
-          <Link to="/terms" className="text-decoration-none text-muted">Terms & conditions</Link>
-          <Link to="/privacy" className="text-decoration-none text-muted">Privacy policy</Link>
+          <Link to="/terms" className="text-decoration-none text-muted">Terms & Conditions</Link>
+          <Link to="/privacy" className="text-decoration-none text-muted">Privacy Policy</Link>
         </div>
-
       </div>
     </footer>
   );
