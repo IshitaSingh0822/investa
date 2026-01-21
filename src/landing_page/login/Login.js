@@ -1,90 +1,196 @@
-import React, { useState } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import API_BASE_URL from "../../api";
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import config from '../config';
+import './Auth.css';
 
-function Login() {
-  const navigate = useNavigate();
+const Login = () => {
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
+    email: '',
+    password: ''
   });
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [e.target.name]: e.target.value
     });
+    setError('');
+  };
+
+  const validateForm = () => {
+    if (!formData.email || !formData.password) {
+      setError('Please enter both email and password');
+      return false;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('Please enter a valid email address');
+      return false;
+    }
+
+    return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    
+    if (!validateForm()) {
+      return;
+    }
+
     setLoading(true);
+    setError('');
 
     try {
-      const response = await axios.post(
-        `${API_BASE_URL}/login`,
-        formData
-      );
+      const response = await fetch(`${config.API_URL}/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        }),
+        credentials: 'include'
+      });
 
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+      const data = await response.json();
 
-      window.dispatchEvent(new Event("userDataUpdated"));
-
-      navigate("/");
+      if (response.ok && data.success) {
+        // Store token and user data
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        // Dispatch event to notify other components
+        window.dispatchEvent(new Event('userDataUpdated'));
+        
+        // Redirect to dashboard with token and user data
+        const userDataEncoded = encodeURIComponent(JSON.stringify(data.user));
+        window.location.href = `${config.DASHBOARD_URL}?token=${data.token}&user=${userDataEncoded}`;
+      } else {
+        setError(data.message || 'Invalid email or password');
+      }
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Login failed. Please check your credentials."
-      );
+      console.error('Login error:', err);
+      setError('Network error. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="container p-5 mb-5">
-      <div className="row text-center">
-        <h1 className="mt-5">Login</h1>
-        <p className="lead">Access your trading account</p>
+    <div className="auth-container">
+      <div className="auth-card">
+        <div className="auth-header">
+          <h1 className="auth-logo">INVESTA</h1>
+          <h2 className="auth-title">Welcome Back</h2>
+          <p className="auth-subtitle">Log in to access your portfolio</p>
+        </div>
 
-        <div className="col-md-6 mx-auto mt-4">
-          {error && <div className="alert alert-danger">{error}</div>}
+        <form onSubmit={handleSubmit} className="auth-form">
+          {error && (
+            <div className="alert alert-error">
+              <svg className="alert-icon" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span>{error}</span>
+            </div>
+          )}
 
-          <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="email" className="form-label">Email Address</label>
             <input
               type="email"
-              className="form-control mb-3"
-              placeholder="Email"
+              id="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
+              className="form-input"
+              placeholder="Enter your email"
               required
+              disabled={loading}
+              autoComplete="email"
             />
+          </div>
 
-            <input
-              type="password"
-              className="form-control mb-3"
-              placeholder="Password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
+          <div className="form-group">
+            <label htmlFor="password" className="form-label">Password</label>
+            <div className="password-input-wrapper">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="form-input"
+                placeholder="Enter your password"
+                required
+                disabled={loading}
+                autoComplete="current-password"
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+                disabled={loading}
+              >
+                {showPassword ? (
+                  <svg className="password-icon" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                    <path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
+                  </svg>
+                ) : (
+                  <svg className="password-icon" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                    <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                  </svg>
+                )}
+              </button>
+            </div>
+          </div>
 
-            <button className="btn btn-primary w-100">
-              {loading ? "Logging in..." : "Login"}
-            </button>
-          </form>
+          <div className="form-options">
+            <label className="checkbox-label">
+              <input type="checkbox" className="checkbox-input" />
+              <span className="checkbox-text">Remember me</span>
+            </label>
+            <Link to="/forgot-password" className="forgot-link">
+              Forgot Password?
+            </Link>
+          </div>
+
+          <button 
+            type="submit" 
+            className="auth-button"
+            disabled={loading}
+          >
+            {loading ? (
+              <span className="button-loading">
+                <svg className="spinner" viewBox="0 0 24 24">
+                  <circle className="spinner-circle" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                </svg>
+                Logging In...
+              </span>
+            ) : (
+              'Log In'
+            )}
+          </button>
+        </form>
+
+        <div className="auth-footer">
+          <p className="auth-footer-text">
+            Don't have an account?{' '}
+            <Link to="/signup" className="auth-link">
+              Sign Up
+            </Link>
+          </p>
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default Login;
-
